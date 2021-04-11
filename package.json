@@ -25,6 +25,7 @@
     "nyc": "^14.1.1"
   },
   "dependencies": {
-    "@imgcook/plugin-images": "0.1.0-alpha.7"
+    "@imgcook/plugin-images": "0.1.0-alpha.7",
+    "ali-oss": "^6.15.2"
   }
 }
