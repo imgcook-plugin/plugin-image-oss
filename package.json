@@ -1,6 +1,6 @@
 {
-  "name": "@imgcook/plugin-template",
-  "version": "0.0.1",
+  "name": "@imgcook/plugin-image-oss",
+  "version": "0.0.3",
   "description": "plugin template",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@imgcook/plugin-images": "0.1.0-alpha.7",
-    "ali-oss": "^6.15.2"
+    "ali-oss": "^6.15.2",
+    "log4js": "^6.3.0"
   }
 }

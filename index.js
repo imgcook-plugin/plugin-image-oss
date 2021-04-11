@@ -7,10 +7,9 @@
  */
 
 const fs = require('fs')
-const { unique, downloadImg } = require('@imgcook/cli-utils')
-const chalk = require('chalk')
+const { unique, downloadImg, homedir } = require('@imgcook/cli-utils')
+const path = require('path')
 const oss = require('ali-oss')
-const { options } = require('yargs')
 
 let ossClient
 
@@ -19,7 +18,7 @@ const createOssClient = function (option) {
 }
 
 const uploadData = async (file, filepath, option) => {
-  let result = await client.put(`/static/` + filepath, file)
+  let result = await ossClient.put(`/static/` + filepath, file)
   return result
 }
 
@@ -111,12 +110,11 @@ const pluginHandler = async (option) => {
     index++
   }
   let result = {}
-  console.log('data: ', data.code.panelDisplay);
   return { data, filePath, config, result }
 }
 
 module.exports = (...args) => {
   return pluginHandler(...args).catch((err) => {
-    console.log(err)
+    console.error(err)
   })
 }
