@@ -11,6 +11,7 @@ const { unique, downloadImg, homedir } = require('@imgcook/cli-utils')
 const path = require('path')
 const oss = require('ali-oss')
 const log4js = require('log4js')
+const rimraf = require('rimraf')
 
 log4js.configure({
   appenders: {
@@ -19,7 +20,7 @@ log4js.configure({
       filename: path.join(homedir(), '.imgcook', 'oss.log'),
     },
   },
-  categories: { default: { appenders: ['oss'], level: 'debug' } },
+  categories: { default: { appenders: ['oss'], level: 'error' } },
 })
 
 const logger = log4js.getLogger('oss')
@@ -27,6 +28,7 @@ const logger = log4js.getLogger('oss')
 let ossClient
 
 const createOssClient = function (option) {
+  option.secure = true
   !ossClient && (ossClient = new oss(option))
 }
 
@@ -42,6 +44,7 @@ const pluginHandler = async (option) => {
     throw new Error('option.oss is not defined')
   }
   createOssClient(option.config.oss)
+
   let imgArr = []
   let { data } = option
   const { filePath, config } = option
@@ -49,6 +52,8 @@ const pluginHandler = async (option) => {
   if (!fs.existsSync(filePath)) {
     fs.mkdirSync(filePath)
   }
+  const imgPath = `${filePath}/.images`
+  const imgrc = `${imgPath}/.imgrc`
   const panelDisplay = data.code.panelDisplay || []
   const moduleData = data.moduleData
   let index = 0
@@ -60,9 +65,7 @@ const pluginHandler = async (option) => {
     )
     if (imgArr && imgArr.length > 0) {
       imgArr = unique(imgArr)
-      const imgPath = `${filePath}/images`
       let imgObj = []
-      const imgrc = `${imgPath}/.imgrc`
       if (fs.existsSync(imgrc)) {
         let imgConfig = fs.readFileSync(imgrc, 'utf8')
         imgObj = JSON.parse(imgConfig) || []
@@ -81,7 +84,8 @@ const pluginHandler = async (option) => {
             curImgObj = item
           }
         }
-        const reg = new RegExp(imgArr[idx], 'g')
+        const reg = new RegExp(`({require\\(['"])?${imgArr[idx]}(['"]\\)})?`, 'g')
+        logger.info(reg)
         if (!curImgObj.imgPath) {
           await downloadImg(imgArr[idx], imgPathItem)
           let newImgUrl = ''
@@ -91,22 +95,22 @@ const pluginHandler = async (option) => {
             option.config.oss !== 'undefined'
           ) {
             const udata = await uploadData(imgPathItem, imgName, option.config)
-            fileValue = fileValue.replace(reg, udata.url)
+            fileValue = fileValue.replace(reg, JSON.stringify(udata.url))
             newImgUrl = udata.url
           } else if (moduleData && moduleData.dsl === 'react-taobao-standard') {
             // If the local path image is referenced under the react standard, use the require reference
             const regex = new RegExp(`"${imgArr[idx]}"`, 'g')
             fileValue = fileValue.replace(
               regex,
-              `require('./images/${imgName}')`
+              `require('./.images/${imgName}')`
             )
           } else {
-            fileValue = fileValue.replace(reg, `./images/${imgName}`)
+            fileValue = fileValue.replace(reg, `./.images/${imgName}`)
           }
           imgObj.push({
             newImgUrl,
             imgUrl: imgArr[idx],
-            imgPath: `./images/${imgName}`,
+            imgPath: `./.images/${imgName}`,
           })
         } else {
           if (
@@ -120,12 +124,18 @@ const pluginHandler = async (option) => {
           }
         }
       }
-      if (imgObj.length > 0) {
+      /* if (imgObj.length > 0) {
         fs.writeFileSync(imgrc, JSON.stringify(imgObj), 'utf8')
-      }
+      } */
     }
     item.panelValue = fileValue
     index++
+  }
+  try {
+    logger.debug('rm rf ' + imgPath)
+    rimraf.sync(imgPath)
+  } catch (err) {
+    logger.error(err)
   }
   let result = {}
   return { data, filePath, config, result }
