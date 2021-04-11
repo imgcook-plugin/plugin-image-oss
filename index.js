@@ -38,7 +38,7 @@ const uploadData = async (file, filepath) => {
 const pluginHandler = async (option) => {
   logger.debug('config:', option.config)
   if (!option.config.oss) {
-    logger.err(`option.oss is not defined`, option)
+    logger.error(`option.oss is not defined`, option)
     throw new Error('option.oss is not defined')
   }
   createOssClient(option.config.oss)
