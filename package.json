@@ -1,6 +1,6 @@
 {
   "name": "@imgcook/plugin-image-oss",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "plugin template",
   "main": "index.js",
   "scripts": {

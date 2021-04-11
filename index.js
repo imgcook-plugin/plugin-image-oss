@@ -45,7 +45,7 @@ const pluginHandler = async (option) => {
     )
     if (imgArr && imgArr.length > 0) {
       imgArr = unique(imgArr)
-      const imgPath = `${filePath}/wyq`
+      const imgPath = `${filePath}/images`
       let imgObj = []
       const imgrc = `${imgPath}/.imgrc`
       if (fs.existsSync(imgrc)) {
@@ -75,20 +75,20 @@ const pluginHandler = async (option) => {
             option.config.oss &&
             option.config.oss !== 'undefined'
           ) {
-            const udata = await uploadData(imgPathItem, option.config)
+            const udata = await uploadData(imgPathItem, imgName, option.config)
             fileValue = fileValue.replace(reg, udata.url)
             newImgUrl = udata.url
           } else if (moduleData && moduleData.dsl === 'react-taobao-standard') {
             // If the local path image is referenced under the react standard, use the require reference
             const regex = new RegExp(`"${imgArr[idx]}"`, 'g')
-            fileValue = fileValue.replace(regex, `require('./wyq/${imgName}')`)
+            fileValue = fileValue.replace(regex, `require('./images/${imgName}')`)
           } else {
-            fileValue = fileValue.replace(reg, `./wyq/${imgName}`)
+            fileValue = fileValue.replace(reg, `./images/${imgName}`)
           }
           imgObj.push({
             newImgUrl,
             imgUrl: imgArr[idx],
-            imgPath: `./wyq/${imgName}`,
+            imgPath: `./images/${imgName}`,
           })
         } else {
           if (
