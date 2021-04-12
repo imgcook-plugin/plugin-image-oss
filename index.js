@@ -76,7 +76,8 @@ const pluginHandler = async (option) => {
         }
         let suffix = imgArr[idx].split('.')
         suffix = suffix[suffix.length - 1]
-        const imgName = `img_${moduleData.id}_${index}_${idx}.${suffix}`
+        // 加上Date.now 避免覆盖
+        const imgName = `img_${moduleData.id}_${index}_${idx}_${Date.now()}.${suffix}`
         const imgPathItem = `${imgPath}/${imgName}`
         let curImgObj = {}
         for (const item of imgObj) {
